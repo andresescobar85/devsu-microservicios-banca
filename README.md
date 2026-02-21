@@ -113,11 +113,12 @@ Es vital advertir sobre el orden de los datos:
 Bash
 docker-compose build --no-cache ms-account
 docker-compose up -d
+
 📊 Estructura de Base de Datos
 ms-client: Tabla Persona (Herencia), Tabla Cliente.
 
 ms-account: Tabla Cuenta, Tabla Movimiento.
 
-Desarrollado por: [Tu Nombre]
+Desarrollado por: ANDRES FELIPE ESCOBAR ARANGO
 
 Versión: 1.0.0
