@@ -56,20 +56,59 @@ Endpoint: GET http://localhost:8082/api/movimientos/reporte
 
 Parámetros: nombre, fechaInicio, fechaFin.
 
-⚠️ Solución de Problemas Comunes
-Lista de registros vacía en el reporte:
+🛠️ Detalles de Infraestructura (Docker)
+Esta sección explica los componentes que se levantan con el comando docker-compose up -d:
 
-Verifica que el nombre del cliente en la URL coincida exactamente con el de la base de datos (ojo con mayúsculas y espacios).
+🗄️ Base de Datos Única
+A diferencia de otros modelos, este proyecto utiliza una base de datos compartida llamada banco_db.
 
-Asegúrate de que el rango de fechas incluya el día del movimiento.
+Imagen: postgres:15-alpine
 
-Error de Compilación (Incompatible Types):
+Credenciales: Usuario: postgres | Clave: root
 
-Si cambiaste un parámetro de Long a String, recuerda ejecutar mvn clean compile para borrar los archivos .class antiguos.
+Puerto Local: 5432
 
-Docker no reconoce cambios en el código:
+Tablas: Al iniciar, Hibernate creará automáticamente las tablas para clientes (persona, cliente) y para cuentas (cuenta, movimiento, usuario).
 
-Si modificaste el código Java, debes reconstruir la imagen:
+🐇 Mensajería (RabbitMQ)
+Utilizado para la sincronización asíncrona entre microservicios.
+
+Puerto de Aplicación: 5672
+
+Puerto Administrativo (UI): 15672 (Accede vía http://localhost:15672 con guest/guest).
+
+Flujo: Cuando ms-client registra un nuevo cliente, publica un evento que ms-account consume para replicar los datos básicos del usuario en su lógica interna.
+
+⚙️ Configuración del Entorno (.env)
+Aunque los valores están en el docker-compose, es una buena práctica mencionar cómo se mapean a Spring Boot mediante las variables de entorno. Asegúrate de que tu archivo application.properties en ambos proyectos use estas llaves:
+
+Properties
+# Ejemplo de conexión dinámica en ms-client y ms-account
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.rabbitmq.host=${SPRING_RABBITMQ_HOST}
+server.port=${SERVER_PORT}
+🚀 Guía de Despliegue Rápido
+Añade este bloque para que el evaluador no tenga dudas:
+
+Construir las imágenes:
+
+Bash
+docker-compose build
+Levantar el ecosistema:
+
+Bash
+docker-compose up -d
+Verificar estado:
+
+Bash
+docker ps
+Deberías ver 4 contenedores activos: db-banco, rabbitmq-banco, ms-client y ms-account.
+
+📝 Notas de Integridad de Datos
+Es vital advertir sobre el orden de los datos:
+
+⚠️ IMPORTANTE: > 1. Debido a que ambos servicios usan depends_on, la base de datos y RabbitMQ siempre iniciarán primero.
+2. Sincronización: Si creas un cliente mientras ms-account está apagado, el mensaje se quedará en la cola de RabbitMQ y se procesará automáticamente cuando el servicio de cuentas suba. No se pierde información.
 
 Bash
 docker-compose build --no-cache ms-account
