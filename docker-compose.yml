@@ -1,0 +1,57 @@
+
+services:
+  db-banco:
+    image: postgres:15-alpine
+    container_name: db-banco
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=banco_db
+    ports:
+      - "5432:5432"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-banco
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  ms-client:
+    build: 
+      context: .
+      dockerfile: ms-client/Dockerfile
+    container_name: ms-client
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-banco:5432/banco_db
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SERVER_PORT=8080
+    depends_on:
+      - db-banco
+      - rabbitmq
+
+  ms-account:
+    build: 
+      context: .
+      dockerfile: ms-account/Dockerfile
+    container_name: ms-account
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-banco:5432/banco_db
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SERVER_PORT=8082
+    depends_on:
+      - db-banco
+      - rabbitmq
+networks:
+  default:
+    name: banco-network
