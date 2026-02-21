@@ -119,6 +119,72 @@ ms-client: Tabla Persona (Herencia), Tabla Cliente.
 
 ms-account: Tabla Cuenta, Tabla Movimiento.
 
+🛠️ Comandos de Administración y Monitoreo
+🐳 Gestión de Contenedores e Imágenes
+Para verificar qué servicios están corriendo y qué imágenes se han construido, utiliza los siguientes comandos en tu terminal:
+
+Ver contenedores activos (Status, Puertos, Nombres):
+
+Bash
+docker ps
+Ver todos los contenedores (incluyendo los que fallaron o están apagados):
+
+Bash
+docker ps -a
+Listar imágenes descargadas y construidas:
+
+Bash
+docker images
+Aquí deberías ver ms-client, ms-account, postgres y rabbitmq.
+
+🗄️ Acceso a la Base de Datos vía Consola
+Si necesitas verificar manualmente los registros en banco_db sin usar una herramienta externa como DBeaver, sigue estos pasos:
+
+Entrar al contenedor de la base de datos:
+
+Bash
+docker exec -it db-banco bash
+Acceder a PostgreSQL (usando el usuario y BD de tu compose):
+
+Bash
+psql -U postgres -d banco_db
+(Si te pide contraseña, ingresa: root)
+
+Comandos útiles dentro de psql:
+
+\dt : Listar todas las tablas creadas por Hibernate.
+
+SELECT * FROM cliente; : Ver los clientes registrados.
+
+SELECT * FROM cuenta; : Ver las cuentas creadas.
+
+SELECT * FROM movimiento; : Ver el historial de transacciones.
+
+\q : Salir de la consola de Postgres.
+
+exit : Salir del contenedor.
+
+🔍 Inspección de Logs
+Si un microservicio no responde, puedes ver qué está pasando en tiempo real (muy útil para depurar el NullPointerException o errores de RabbitMQ):
+
+Logs de un servicio específico:
+
+Bash
+docker logs -f ms-account
+Logs de todos los servicios al mismo tiempo:
+
+Bash
+docker-compose logs -f
+🧹 Limpieza del Sistema
+Para borrar todo y empezar desde cero (limpiar tablas y colas):
+
+Bash
+# Apaga y elimina contenedores y redes
+docker-compose down
+
+# Apaga, elimina contenedores y también borra los volúmenes de datos
+docker-compose down -v
+
 Desarrollado por: ANDRES FELIPE ESCOBAR ARANGO
 
 Versión: 1.0.0
